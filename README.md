@@ -13,3 +13,12 @@
 * [Visual Studio 2019](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&rel=16)(一応入れた。効果あるか不明)
 
 参考リンク: https://www.slideshare.net/TakahiroMiyaura/hololenswindows-mixed-reality-128235273
+
+
+## ビルドの作法
+1. Unityでビルド
+* `App`ディレクトリを出力先として、ビルドする
+* `App`内に、Visual Studio用のソリューションが生成される
+
+2. Visual Studioでビルド
+* "Release", "x86", "リモートコンピュータ,またはエミュレータ" を選択してビルドする
