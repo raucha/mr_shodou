@@ -9,6 +9,7 @@
 * [Visual Studio 2017](https://www.visualstudio.com/thank-you-downloading-visual-studio/?sku=Community&rel=15)
 * [UNITY 2017.4.32f1](https://unity3d.com/jp/unity/qa/lts-releases?version=2017.4)
 * [MRTK 2017.4.3.0-Refresh](https://github.com/microsoft/MixedRealityToolkit-Unity/releases/tag/2017.4.3.0-Refresh)
+* [Hololens Emulator 10.0.17763.134](https://go.microsoft.com/fwlink/?linkid=2065980)
 
 * [Visual Studio 2019](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&rel=16)(一応入れた。効果あるか不明)
 
