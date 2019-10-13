@@ -97,7 +97,7 @@ def main():
     sounds = list(map(pygame.sndarray.make_sound, transposed_sounds))
     # sounds = list(map(pygame.sndarray.make_sound, transposed_sounds))
 
-    ser = serial.Serial('COM5', 1000000, timeout=None)
+    ser = serial.Serial('COM5', 57600, timeout=None)
     # ser = serial.Serial('/dev/ttyS3', 9600, timeout=None)
     while True:
         # event = pygame.event.wait()
@@ -114,7 +114,7 @@ def main():
         except ValueError:
             continue
 
-        # 音を再生
+        # play music
         # print(data["state"])
         if PEN_EVENT_PUSH == data["state"]:
             sounds[13].play(fade_ms=50)
