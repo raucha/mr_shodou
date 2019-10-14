@@ -88,16 +88,18 @@ def main():
     fps, sound = wavfile.read(args.wav.name)
     sys.stdout.write('Transponding sound file... ')
     sys.stdout.flush()
-    tones = range(-25, 25)
-    transposed_sounds = [pitchshift(sound, n) for n in tones]
-    print('DONE')
+    # tones = range(-25, 25)
+    # transposed_sounds = [pitchshift(sound, n) for n in tones]
 
     pygame.mixer.init(fps, -16, 1, 2048)
+    sound_pushed = pygame.sndarray.make_sound(pitchshift(sound, 0))
+    sound_released = pygame.sndarray.make_sound(pitchshift(sound, 10))
+    print('DONE')
     # screen = pygame.display.set_mode((150, 150))
-    sounds = list(map(pygame.sndarray.make_sound, transposed_sounds))
+    # sounds = list(map(pygame.sndarray.make_sound, transposed_sounds))
     # sounds = list(map(pygame.sndarray.make_sound, transposed_sounds))
 
-    ser = serial.Serial('COM5', 57600, timeout=None)
+    ser = serial.Serial('COM3', 57600, timeout=None)
     # ser = serial.Serial('/dev/ttyS3', 9600, timeout=None)
     while True:
         # event = pygame.event.wait()
@@ -117,13 +119,14 @@ def main():
         # play music
         # print(data["state"])
         if PEN_EVENT_PUSH == data["state"]:
-            sounds[13].play(fade_ms=50)
-            sounds[36].fadeout(50)
+            sound_pushed.play(fade_ms=50)
+            # sound_pushed.play(fade_ms=50)
+            sound_released.fadeout(50)
             is_playing["push"] = True
             is_playing["release"] = False
         if PEN_EVENT_RELEASE == data["state"]:
-            sounds[36].play(fade_ms=50)
-            sounds[13].fadeout(50)
+            sound_released.play(fade_ms=150)
+            sound_pushed.fadeout(50)
             is_playing["release"] = True
             is_playing["push"] = False
 

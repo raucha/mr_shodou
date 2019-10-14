@@ -1,16 +1,3 @@
-/*********************************************************
-  This is a library for the MPR121 12-channel Capacitive touch sensor
-  Designed specifically to work with the MPR121 Breakout in the Adafruit shop
-  ----> https://www.adafruit.com/products/
-  These sensors use I2C communicate, at least 2 pins are required
-  to interface
-  Adafruit invests time and resources providing this open source code,
-  please support Adafruit and open-source hardware by purchasing
-  products from Adafruit!
-  Written by Limor Fried/Ladyada for Adafruit Industries.
-  BSD license, all text above must be included in any redistribution
-**********************************************************/
-
 #include <Wire.h>
 #include "Adafruit_MPR121.h"
 
@@ -24,6 +11,9 @@ Adafruit_MPR121 cap = Adafruit_MPR121();
 // uint16_t currtouched = 0;
 
 void setup() {
+  pinMode(3, OUTPUT);
+  // pinMode(5, OUTPUT);
+  // pinMode(6, OUTPUT);
   Serial.begin(57600);
   while (!Serial) {  // needed to keep leonardo/micro from starting too fast!
     delay(10);
@@ -61,56 +51,85 @@ void loop() {
   static float penVal2 = penVal_raw;
   float k = 0.99;
   penVal = k * ((float)penVal) + (1.0 - k) * ((float)penVal_raw);
-  float k2 = 0.8;
+  float k2 = 0.90;
   penVal2 = k2 * ((float)penVal2) + (1.0 - k2) * ((float)penVal_raw);
+  static float prevPenVal2 = penVal2;
 
   // 変化速度を取得
-  static float preDiff = penVal2 - penVal;
+  static float prevDiff = penVal2 - penVal;
   float diff = penVal2 - penVal;
-  float dDiff = diff - preDiff;
-  preDiff = diff;
+  float dDiff = diff - prevDiff;
   static float prevDDiff = dDiff;
+
+  // 速度のLPFでの検出用
+  static float prevRawVal = penVal_raw;
+  float spd = prevPenVal - penVal_raw;
+  static int spd_flted = spd;
+  float k3 = 0.9;
+  spd_flted = k3 * ((float)spd_flted) + (1.0 - k3) * ((float)spd);
 
   const int EVENT_STAY = 0;
   const int EVENT_PUSH = 1;
   const int EVENT_RELEASE = 2;
   int penEvent = EVENT_STAY;
-  //  const int release_th = 10;
-  const float release_th = 3.0;
-  if (-release_th > dDiff && -release_th < prevDDiff) {
-    penEvent = EVENT_PUSH;
-  } else if (release_th < dDiff && release_th > prevDDiff) {
-    penEvent = EVENT_RELEASE;
+  const int STATE_RELEASE = 0;
+  const int STATE_PUSH = 1;
+  // const int STATE_UNKOWN = 2;
+  static int penState = STATE_RELEASE;
+  static int pushedTime = millis();
+
+  if (2000 < millis() - pushedTime) {
+    penState = STATE_RELEASE;
   }
-  //  if (release_th < abs(penVal2 - penVal)) {
-  //    if (penVal2 < penVal) {
-  //      penEvent = EVENT_PUSH;
-  //    } else {
-  //      penEvent = EVENT_RELEASE;
-  //    }
-  //  }
+
+  //  const int release_th = 10;
+  //  const float release_th = 3.0;
+  //  const float release_th = 20.0;
+  const float th_h = 120.0;
+  const float th_l = 110.0;
+
+  if (th_l > penVal2 && th_l < prevPenVal2 && STATE_RELEASE == penState) {
+    //  if (-release_th > diff && -release_th < prevDiff && STATE_RELEASE ==
+    //  penState) {
+    // if (-release_th > dDiff && -release_th < prevDDiff) {
+    // しきい値を跨いだ時に反応．ただし，近傍2秒間でプッシュされていて，その後リリースしていない場合は反応しない．
+    penEvent = EVENT_PUSH;
+    penState = STATE_PUSH;
+    pushedTime = millis();
+    digitalWrite(3, HIGH);
+  } else if (th_h < penVal2 && th_h > prevPenVal2) {
+    //  } else if (release_th < diff && release_th > prevDiff) {
+    //  } else if (release_th < dDiff && release_th > prevDDiff) {
+    penEvent = EVENT_RELEASE;
+    penState = STATE_RELEASE;
+    digitalWrite(3, LOW);
+  }
+
   prevPenVal = penVal;
+  prevDiff = diff;
   prevDDiff = dDiff;
+  prevPenVal2 = penVal2;
 
-      // pythonへのデータ送付用
-      Serial.print("{");
-      Serial.print(" \"state\":");
-      Serial.print(penEvent);
-      Serial.print(", \"val\":");
-      Serial.print(penVal);
-      Serial.println("}");
+  // pythonへのデータ送付用
+  Serial.print("{");
+  Serial.print(" \"state\":");
+  Serial.print(penEvent);
+  Serial.print(", \"val\":");
+  Serial.print(penVal);
+  Serial.println("}");
 
-//  // シリアルプロット用
-//  Serial.print(penVal_raw);
-//  Serial.print(",");
-//  Serial.print(penVal2);
-//  Serial.print(",");
-//  Serial.print(diff);
-//  Serial.print(",");
-//  Serial.print(dDiff);
-//  Serial.print(",");
-//  Serial.print(penVal);
-//  Serial.println("");
+  //  // シリアルプロット用
+  //  Serial.print(penVal_raw);
+  //  Serial.print(",");
+  //  Serial.print(penVal2);
+  //      Serial.print(",");
+  //    Serial.print(diff);
+  //      Serial.print(",");
+  //      Serial.print(dDiff);
+  //      Serial.print(",");
+  //      Serial.print(penVal);
+  //  Serial.print(spd_flted);
+  //  Serial.println("");
 
   // comment out this line for detailed data from the sensor!
   return;
