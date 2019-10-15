@@ -12,6 +12,8 @@ Adafruit_MPR121 cap = Adafruit_MPR121();
 
 void setup() {
   pinMode(3, OUTPUT);
+  pinMode(6, INPUT_PULLUP);
+  pinMode(7, INPUT_PULLUP);
   // pinMode(5, OUTPUT);
   // pinMode(6, OUTPUT);
   Serial.begin(57600);
@@ -82,11 +84,23 @@ void loop() {
     penState = STATE_RELEASE;
   }
 
+  static float ave_high = 150;
+  static float ave_low = 100;
+
+  if (LOW == digitalRead(6)) {
+    ave_high = penVal;
+  }
+  if (LOW == digitalRead(7)) {
+    ave_low = penVal;
+  }
+
   //  const int release_th = 10;
   //  const float release_th = 3.0;
   //  const float release_th = 20.0;
-  const float th_h = 120.0;
-  const float th_l = 110.0;
+  //  const float th_h = 120.0;
+  //  const float th_l = 110.0;
+  float th_h = (ave_high - ave_low) * 0.3 + ave_low + 5.0;
+  float th_l = (ave_high - ave_low) * 0.3 + ave_low - 5.0;
 
   if (th_l > penVal2 && th_l < prevPenVal2 && STATE_RELEASE == penState) {
     //  if (-release_th > diff && -release_th < prevDiff && STATE_RELEASE ==
@@ -129,7 +143,10 @@ void loop() {
   //      Serial.print(",");
   //      Serial.print(penVal);
   //  Serial.print(spd_flted);
-  //  Serial.println("");
+  //  Serial.print(ave_high);
+  //  Serial.print(",");
+  //  Serial.print(ave_low);
+  //    Serial.println("");
 
   // comment out this line for detailed data from the sensor!
   return;
