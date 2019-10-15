@@ -99,7 +99,8 @@ def main():
     # sounds = list(map(pygame.sndarray.make_sound, transposed_sounds))
     # sounds = list(map(pygame.sndarray.make_sound, transposed_sounds))
 
-    ser = serial.Serial('COM3', 57600, timeout=None)
+    ser = serial.Serial('/dev/ttyUSB0', 57600, timeout=None)
+    # ser = serial.Serial('COM3', 57600, timeout=None)
     # ser = serial.Serial('/dev/ttyS3', 9600, timeout=None)
     while True:
         # event = pygame.event.wait()
@@ -125,7 +126,7 @@ def main():
             is_playing["push"] = True
             is_playing["release"] = False
         if PEN_EVENT_RELEASE == data["state"]:
-            sound_released.play(fade_ms=150)
+            sound_released.play(fade_ms=100)
             sound_pushed.fadeout(50)
             is_playing["release"] = True
             is_playing["push"] = False
